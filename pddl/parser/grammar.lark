@@ -1,6 +1,6 @@
 
 // PDDL DOMAIN
-domain:        LPAR DEFINE domain_def [requirements] [types] [constants] [predicates] [functions] structure_def* RPAR
+domain:        LPAR DEFINE domain_def [requirements] [types] [constants] [predicates] [functions] [sensing_def] structure_def* RPAR
 domain_def:    LPAR DOMAIN NAME RPAR
 
 requirements:              LPAR REQUIREMENTS require_key+ RPAR
@@ -9,6 +9,7 @@ types:                 LPAR TYPES typed_list_name RPAR
 constants:             LPAR CONSTANTS typed_list_name RPAR
 predicates:            LPAR PREDICATES atomic_formula_skeleton+ RPAR
 functions:             LPAR FUNCTIONS f_typed_list_atomic_function_skeleton RPAR
+sensing_def:           LPAR SENSING sensing_model_for+ RPAR
 
 atomic_formula_skeleton:   LPAR NAME typed_list_variable RPAR
 
@@ -18,6 +19,10 @@ f_typed_list_atomic_function_skeleton: atomic_function_skeleton+
 ?f_type_def: TYPE_NUMBER
 
 atomic_function_skeleton:  LPAR NAME typed_list_variable RPAR
+
+sensing_model_for: LPAR MODEL_FOR literal_skeleton gd RPAR
+literal_skeleton: atomic_formula_skeleton
+              | LPAR NOT atomic_formula_skeleton RPAR
 
 ?structure_def:    action_def | derived_predicates
 action_def:        LPAR ACTION NAME PARAMETERS action_parameters action_body_def RPAR
@@ -163,6 +168,7 @@ NAME: /[a-zA-Z][a-zA-Z0-9-_]*/
             | NUMERIC_FLUENTS
             | FLUENTS
             | ACTION_COSTS
+            | PARTIAL_OBSERVABILITY
 
 COMMENT: /;[^\n]*/
 
@@ -172,6 +178,8 @@ REQUIREMENTS: ":requirements"
 TYPES: ":types"
 CONSTANTS: ":constants"
 PREDICATES: ":predicates"
+SENSING: ":sensing"
+MODEL_FOR: "model-for"
 FUNCTIONS: ":functions"
 ACTION: ":action"
 PARAMETERS: ":parameters"
@@ -224,6 +232,7 @@ QUANTIFIED_PRECONDITIONS: ":quantified-preconditions"
 NUMERIC_FLUENTS: ":numeric-fluents"
 FLUENTS: ":fluents"
 ACTION_COSTS: ":action-costs"
+PARTIAL_OBSERVABILITY: ":partial-observability"
 
 // others
 LPAR : "("

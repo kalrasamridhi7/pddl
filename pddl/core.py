@@ -39,6 +39,7 @@ from pddl.helpers.base import assert_, check, ensure, ensure_set
 from pddl.logic.base import And, Formula, is_literal
 from pddl.logic.functions import FunctionExpression, Metric, NumericFunction
 from pddl.logic.predicates import DerivedPredicate, Predicate
+from pddl.logic.sensing_model import SensingModel
 from pddl.logic.terms import Constant
 from pddl.requirements import Requirements
 
@@ -58,6 +59,7 @@ class Domain:
         ] = None,  # TODO cannot be empty
         functions: Optional[Collection[FunctionExpression]] = None,
         actions: Optional[Collection["Action"]] = None,
+        sensing_models: Optional[Collection["SensingModel"]] = None,
     ):
         """
         Initialize a PDDL domain.
@@ -80,6 +82,7 @@ class Domain:
         self._predicates = ensure_set(predicates)
         self._derived_predicates = ensure_set(derived_predicates)
         self._actions = ensure_set(actions)
+        self._sensing_models = ensure_set(sensing_models)
         self._functions = Functions(functions, self._requirements)
 
         self._check_consistency()
@@ -92,6 +95,8 @@ class Domain:
         type_checker.check_type(self._actions)
         _check_types_in_has_terms_objects(self._actions, self._types.all_types)  # type: ignore
         self._check_types_in_derived_predicates()
+        self._check_literals_in_sensing_models()
+        # TODO check types in sensing models
 
     def _check_types_in_derived_predicates(self) -> None:
         """Check types in derived predicates."""
@@ -101,6 +106,26 @@ class Domain:
             else set()
         )
         _check_types_in_has_terms_objects(dp_list, self._types.all_types)
+
+    def _check_literals_in_sensing_models(self) -> None:
+        """Check if the literals in sensing models are valid."""
+        print(self._predicates)
+        for model in self._sensing_models:
+            literal = model.literal
+            validate(
+                is_literal(literal),
+                f"Sensing model literal {literal} is not a literal (predicate or NOT predicate).",
+            )
+            if isinstance(literal, Predicate):
+                validate(
+                    literal.name in [predicate.name for predicate in self._predicates],
+                    f"Sensing model literal {literal.name} is not a defined predicate.",
+                )
+            else:  # Not
+                validate(
+                    literal.argument.name in [predicate.name for predicate in self._predicates],
+                    f"Sensing model literal {literal.argument.name} is not a defined predicate.",
+                )
 
     @property
     def name(self) -> name_type:
@@ -136,6 +161,11 @@ class Domain:
     def actions(self) -> AbstractSet["Action"]:
         """Get the actions."""
         return self._actions
+    
+    @property
+    def sensing_models(self) -> AbstractSet["SensingModel"]:
+        """Get the sensing models."""
+        return self._sensing_models
 
     @property
     def types(self) -> Dict[name_type, Optional[name_type]]:
@@ -154,6 +184,7 @@ class Domain:
             and self.functions == other.functions
             and self.derived_predicates == other.derived_predicates
             and self.actions == other.actions
+            and self.sensing_models == other.sensing_models
         )
 
     def __str__(self) -> str:
@@ -182,6 +213,13 @@ class Domain:
             "",
             to_string=lambda obj: str(obj) + "\n",
         )
+        if self.sensing_models:
+            body += f"(:sensing\n {sort_and_print_collection(
+            "",
+            self.sensing_models,
+            "",
+            to_string=lambda obj: str(obj) + "\n",
+        )})\n"
         result = result + "\n" + indent(body, indentation) + "\n)"
         result = remove_empty_lines(result)
         return result

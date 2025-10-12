@@ -47,6 +47,8 @@ class Symbols(Enum):
     PARAMETERS = ":parameters"
     PRECONDITION = ":precondition"
     PREDICATES = ":predicates"
+    SENSING = ":sensing"
+    MODEL_FOR = "model-for"
     PROBLEM = "problem"
     REQUIREMENTS = ":requirements"
     TYPES = ":types"
@@ -95,6 +97,7 @@ class RequirementSymbols(Enum):
     OBJECT_FLUENTS = ":object-fluents"
     NUMERIC_FLUENTS = ":numeric-fluents"
     ACTION_COSTS = ":action-costs"
+    PARTIAL_OBSERVABILITY = ":partial-observability"
 
     def strip(self) -> str:
         """Strip the leading colon."""

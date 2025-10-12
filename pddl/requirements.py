@@ -38,6 +38,7 @@ class Requirements(Enum):
     OBJECT_FLUENTS = RS.OBJECT_FLUENTS.strip()
     NUMERIC_FLUENTS = RS.NUMERIC_FLUENTS.strip()
     ACTION_COSTS = RS.ACTION_COSTS.strip()
+    PARTIAL_OBSERVABILITY = RS.PARTIAL_OBSERVABILITY.strip()
 
     @classmethod
     def quantified_precondition_requirements(cls) -> Set["Requirements"]:
@@ -45,6 +46,17 @@ class Requirements(Enum):
         return {
             Requirements.UNIVERSAL_PRECONDITION,
             Requirements.EXISTENTIAL_PRECONDITION,
+        }
+
+    @classmethod
+    def partial_observability_requirements(cls) -> Set["Requirements"]:
+        """Get the quantified precondition requirements."""
+        return {
+            Requirements.UNIVERSAL_PRECONDITION,
+            Requirements.EXISTENTIAL_PRECONDITION,
+            Requirements.DIS_PRECONDITION,
+            Requirements.EQUALITY,
+            Requirements.CONDITIONAL_EFFECTS
         }
 
     @classmethod
@@ -96,4 +108,6 @@ def _extend_domain_requirements(
         extended_requirements.update(Requirements.adl_requirements())
     if Requirements.FLUENTS in requirements:
         extended_requirements.update(Requirements.fluents_requirements())
+    if Requirements.PARTIAL_OBSERVABILITY in requirements:
+        extended_requirements.update(Requirements.partial_observability_requirements())
     return extended_requirements

@@ -20,7 +20,7 @@ from pddl.core import Domain
 from pddl.custom_types import name
 from pddl.exceptions import PDDLMissingRequirementError, PDDLParsingError
 from pddl.helpers.base import assert_
-from pddl.logic.base import And, ExistsCondition, ForallCondition, Imply, Not, OneOf, Or
+from pddl.logic.base import And, ExistsCondition, ForallCondition, Imply, Not, OneOf, Or, is_literal
 from pddl.logic.effects import Forall, When
 from pddl.logic.functions import Assign, Decrease, Divide
 from pddl.logic.functions import EqualTo as FunctionEqualTo
@@ -40,6 +40,7 @@ from pddl.logic.functions import (
     Times,
 )
 from pddl.logic.predicates import DerivedPredicate, EqualTo, Predicate
+from pddl.logic.sensing_model import SensingModel
 from pddl.logic.terms import Constant, Variable
 from pddl.parser.base import BaseParser
 from pddl.parser.symbols import BINARY_COMP_SYMBOLS, Symbols
@@ -71,15 +72,17 @@ class DomainTransformer(Transformer[Any, Domain]):
         kwargs = {}
         actions = []
         derived_predicates = []
+        sensing_models = []
         for arg in args[2:-1]:
             if isinstance(arg, Action):
                 actions.append(arg)
             elif isinstance(arg, DerivedPredicate):
                 derived_predicates.append(arg)
-            else:
-                assert_(isinstance(arg, dict))
+            elif isinstance(arg, dict):
+                if "sensing_models" in arg:
+                    sensing_models.extend(arg["sensing_models"])
                 kwargs.update(arg)
-        kwargs.update(actions=actions, derived_predicates=derived_predicates)
+        kwargs.update(actions=actions, derived_predicates=derived_predicates, sensing_models=sensing_models)
         return Domain(**kwargs)
 
     def domain_def(self, args):
@@ -148,6 +151,25 @@ class DomainTransformer(Transformer[Any, Domain]):
             var_name: Variable(var_name, tags) for var_name, tags in args[1]
         }
         return list(self._current_parameters_by_name.values())
+    
+    def sensing_def(self, args):
+        """Process the 'sensing_def' rule."""
+        # args[2:] are the sensing_model_for entries
+        if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
+            raise PDDLMissingRequirementError(Requirements.PARTIAL_OBSERVABILITY)
+        sensing_models = args[2:-1]
+        return dict(sensing_models=sensing_models)
+
+    def sensing_model_for(self, args):
+        """Process the 'sensing_model_for' rule."""
+        # args: [MODEL_FOR, literal_skeleton, gd]
+        if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
+            raise PDDLMissingRequirementError(Requirements.PARTIAL_OBSERVABILITY)
+        literal = args[2]
+        if not is_literal(literal):
+            raise PDDLParsingError("Sensing model must be a literal (predicate or NOT predicate).")
+        condition = args[3]
+        return SensingModel(literal, condition)
 
     def emptyor_pregd(self, args):
         """Process the 'emptyor_pregd' rule."""
@@ -350,6 +372,14 @@ class DomainTransformer(Transformer[Any, Domain]):
         predicate_name = args[1]
         variables = self._formula_skeleton(args)
         return Predicate(predicate_name, *variables)
+    
+    def literal_skeleton(self, args):
+        """Process the 'literal_skeleton' rule."""
+        if len(args) == 1:
+            return args[0]
+        elif args[1] == Symbols.NOT.value:
+            return self.gd_not(args)
+        raise PDDLParsingError("Sensing model not defined properly.")
 
     def atomic_function_skeleton(self, args):
         """Process the 'atomic_function_skeleton' rule."""
