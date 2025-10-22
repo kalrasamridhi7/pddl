@@ -93,6 +93,7 @@ class Domain:
         type_checker.check_type(self._constants)
         type_checker.check_type(self._predicates)
         type_checker.check_type(self._actions)
+        type_checker.check_type(self._sensing_models)
         _check_types_in_has_terms_objects(self._actions, self._types.all_types)  # type: ignore
         self._check_types_in_derived_predicates()
         self._check_literals_in_sensing_models()
@@ -109,7 +110,6 @@ class Domain:
 
     def _check_literals_in_sensing_models(self) -> None:
         """Check if the literals in sensing models are valid."""
-        print(self._predicates)
         for model in self._sensing_models:
             literal = model.literal
             validate(
@@ -213,13 +213,12 @@ class Domain:
             "",
             to_string=lambda obj: str(obj) + "\n",
         )
-        if self.sensing_models:
-            body += f"(:sensing\n {sort_and_print_collection(
+        body += sort_and_print_collection(
             "",
             self.sensing_models,
             "",
             to_string=lambda obj: str(obj) + "\n",
-        )})\n"
+        )
         result = result + "\n" + indent(body, indentation) + "\n)"
         result = remove_empty_lines(result)
         return result

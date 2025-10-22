@@ -32,6 +32,7 @@ from pddl.logic.functions import (
     NumericValue,
 )
 from pddl.logic.predicates import DerivedPredicate, EqualTo
+from pddl.logic.sensing_model import SensingModel
 from pddl.logic.terms import Term
 from pddl.parser.symbols import Symbols
 from pddl.requirements import Requirements, _extend_domain_requirements
@@ -307,6 +308,13 @@ class TypeChecker:
         self.check_type(action.parameters)
         self.check_type(action.precondition)
         self.check_type(action.effect)
+
+    @check_type.register
+    def _(self, sensing_model: SensingModel) -> None:
+        """Check types annotations of a PDDL sensing effect."""
+        self.check_type(sensing_model.parameters)
+        self.check_type(sensing_model.precondition)
+        self.check_type(sensing_model.condition)
 
 
 class Functions:

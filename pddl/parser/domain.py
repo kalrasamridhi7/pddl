@@ -78,9 +78,10 @@ class DomainTransformer(Transformer[Any, Domain]):
                 actions.append(arg)
             elif isinstance(arg, DerivedPredicate):
                 derived_predicates.append(arg)
-            elif isinstance(arg, dict):
-                if "sensing_models" in arg:
-                    sensing_models.extend(arg["sensing_models"])
+            elif isinstance(arg, SensingModel):
+                sensing_models.append(arg)
+            else:
+                assert_(isinstance(arg, dict))
                 kwargs.update(arg)
         kwargs.update(actions=actions, derived_predicates=derived_predicates, sensing_models=sensing_models)
         return Domain(**kwargs)
@@ -152,24 +153,21 @@ class DomainTransformer(Transformer[Any, Domain]):
         }
         return list(self._current_parameters_by_name.values())
     
-    def sensing_def(self, args):
-        """Process the 'sensing_def' rule."""
-        # args[2:] are the sensing_model_for entries
+    def sensing_model_def(self, args):
+        """Process the 'sensing_model_def' rule."""
         if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
             raise PDDLMissingRequirementError(Requirements.PARTIAL_OBSERVABILITY)
-        sensing_models = args[2:-1]
-        return dict(sensing_models=sensing_models)
-
-    def sensing_model_for(self, args):
-        """Process the 'sensing_model_for' rule."""
-        # args: [MODEL_FOR, literal_skeleton, gd]
-        if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
-            raise PDDLMissingRequirementError(Requirements.PARTIAL_OBSERVABILITY)
-        literal = args[2]
+        parameters = args[3]
+        literal = args[5]
+        if args[6] != Symbols.PRECONDITION.value:
+            precondition = None
+            condition = args[7]
+        else:
+            precondition = args[7]
+            condition = args[9]
         if not is_literal(literal):
             raise PDDLParsingError("Sensing model must be a literal (predicate or NOT predicate).")
-        condition = args[3]
-        return SensingModel(literal, condition)
+        return SensingModel(parameters, literal, condition, precondition)
 
     def emptyor_pregd(self, args):
         """Process the 'emptyor_pregd' rule."""
