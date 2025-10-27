@@ -68,7 +68,7 @@ class SensingModel:
 
     def __repr__(self) -> str:
         """Get the string representation."""
-        return (f"{type(self).__name__}({self.name}, parameters={', '.join(map(str, self.parameters))}, "
+        return (f"{type(self).__name__}(parameters={', '.join(map(str, self.parameters))}, "
             f"literal={self.literal} precondition={self.precondition}, condition={self.condition})")
 
     def __eq__(self, other):
