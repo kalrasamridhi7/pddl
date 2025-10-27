@@ -1,8 +1,6 @@
-from typing import AbstractSet, Optional, Sequence
-from pddl.logic.base import Formula, is_literal
-from pddl.logic.terms import Variable
-from pddl.parser.symbols import Symbols
-from pddl.helpers.cache_hash import cache_hash
+from typing import Optional, Sequence
+from pddl.logic.base import Formula
+from pddl.logic.terms import Term, Variable
 from pddl.helpers.base import _typed_parameters, ensure_sequence
 
 class SensingModel:
@@ -33,9 +31,14 @@ class SensingModel:
         return self._condition
 
     @property
-    def parameters(self) -> AbstractSet[Variable]:
+    def parameters(self) -> Sequence[Variable]:
         """Get the parameters."""
         return self._parameters
+
+    @property
+    def terms(self) -> Sequence[Term]:
+        """Get the terms."""
+        return self.parameters
 
     @property
     def precondition(self) -> Optional[Formula]:
