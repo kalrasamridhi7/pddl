@@ -59,6 +59,7 @@ class DomainTransformer(Transformer[Any, Domain]):
         self._predicates_by_name: Dict[str, Predicate] = {}
         self._functions_by_name: Dict[str, FunctionExpression] = {}
         self._current_parameters_by_name: Dict[str, Variable] = {}
+        self._current_free_variables_by_name: Dict[str, Variable] = {}
         self._requirements: Set[Requirements] = set()
         self._extended_requirements: Set[Requirements] = set()
 
@@ -152,7 +153,14 @@ class DomainTransformer(Transformer[Any, Domain]):
             var_name: Variable(var_name, tags) for var_name, tags in args[1]
         }
         return list(self._current_parameters_by_name.values())
-    
+
+    def free_variables(self, args):
+        """Process the 'free_variables' rule."""
+        self._current_free_variables_by_name = {
+            var_name: Variable(var_name, tags) for var_name, tags in args[1]
+        }
+        return list(self._current_free_variables_by_name.values())
+
     def sensing_model_def(self, args):
         """Process the 'sensing_model_def' rule."""
         if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
@@ -229,8 +237,8 @@ class DomainTransformer(Transformer[Any, Domain]):
             & self._extended_requirements
         ):
             raise PDDLMissingRequirementError(req)
-        variables = [Variable(var_name, tags) for var_name, tags in args[3]]
-        condition = args[5]
+        variables = args[2]
+        condition = args[3]
         return cond_class(cond=condition, variables=variables)
 
     def gd_comparison(self, args):
@@ -331,10 +339,14 @@ class DomainTransformer(Transformer[Any, Domain]):
 
     def _constant_or_variable(self, t):
         """Get the constant or variable with the given name."""
-        # Case where the term is a free variable (bug) or comes from a parent quantifier
-        if not isinstance(t, Constant) and t not in self._current_parameters_by_name:
+        if isinstance(t, Constant):
+            return t
+        elif t in self._current_parameters_by_name:
+            return self._current_parameters_by_name[t]
+        elif t in self._current_free_variables_by_name:
+            return self._current_free_variables_by_name[t]
+        else:
             return Variable(str(t), {})
-        return t if isinstance(t, Constant) else self._current_parameters_by_name[t]
 
     def atomic_formula_term(self, args):
         """Process the 'atomic_formula_term' rule."""

@@ -25,6 +25,7 @@ literal_skeleton: predicate_term
 ?structure_def:    action_def | derived_predicates | sensing_model_def
 action_def:        LPAR ACTION NAME PARAMETERS action_parameters action_body_def RPAR
 action_parameters: LPAR typed_list_variable RPAR
+free_variables:    LPAR typed_list_variable RPAR
 ?action_body_def:  [PRECONDITION emptyor_pregd] [EFFECT emptyor_effect]
 derived_predicates: LPAR DERIVED atomic_formula_skeleton gd RPAR
 sensing_model_def: LPAR SENSING_MODEL PARAMETERS action_parameters MODEL_FOR literal_skeleton [PRECONDITION emptyor_pregd] SUCH_THAT gd RPAR
@@ -37,8 +38,8 @@ gd:                atomic_formula_term
   |                LPAR NOT gd RPAR
   |                LPAR AND gd* RPAR
   |                LPAR IMPLY gd gd RPAR
-  |                LPAR EXISTS LPAR typed_list_variable RPAR gd RPAR
-  |                LPAR FORALL LPAR typed_list_variable RPAR gd RPAR
+  |                LPAR EXISTS free_variables gd RPAR
+  |                LPAR FORALL free_variables gd RPAR
   |                LPAR binary_comp f_exp f_exp RPAR
 
 // effects
