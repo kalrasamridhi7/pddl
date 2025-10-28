@@ -348,6 +348,12 @@ class DomainTransformer(Transformer[Any, Domain]):
             predicate_name = args[1]
             terms = list(map(self._constant_or_variable, args[2:-1]))
             return Predicate(predicate_name, *terms)
+    
+    def predicate_term(self, args):
+        """Process the 'predicate_term' rule."""
+        predicate_name = args[1]
+        terms = list(map(self._constant_or_variable, args[2:-1]))
+        return Predicate(predicate_name, *terms)
 
     def constant(self, args):
         """Process the 'constant' rule."""

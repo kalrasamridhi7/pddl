@@ -19,8 +19,8 @@ f_typed_list_atomic_function_skeleton: atomic_function_skeleton+
 
 atomic_function_skeleton:  LPAR NAME typed_list_variable RPAR
 
-literal_skeleton: atomic_formula_skeleton
-              | LPAR NOT atomic_formula_skeleton RPAR
+literal_skeleton: predicate_term
+              | LPAR NOT predicate_term RPAR
 
 ?structure_def:    action_def | derived_predicates | sensing_model_def
 action_def:        LPAR ACTION NAME PARAMETERS action_parameters action_body_def RPAR
@@ -60,6 +60,9 @@ num_effect:        LPAR assign_op f_head f_exp RPAR
 
 atomic_formula_term:   LPAR predicate term* RPAR
                    |   LPAR EQUAL_OP term term RPAR
+
+predicate_term: LPAR predicate term* RPAR
+
 ?term:  constant
      |  variable
 ?predicate: NAME
