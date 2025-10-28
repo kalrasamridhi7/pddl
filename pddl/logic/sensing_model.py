@@ -59,7 +59,7 @@ class SensingModel:
         """Get the string."""
         operator_str = "(:sensing \n"
         operator_str += f"    :parameters ({_typed_parameters(self.parameters)})\n"
-        operator_str += f"    :model-for ({self.literal})\n"
+        operator_str += f"    :model-for {self.literal}\n"
         if self.precondition is not None:
             operator_str += f"    :precondition {str(self.precondition)}\n"
         operator_str += f"    :such-that {str(self.condition)}\n"
