@@ -41,6 +41,7 @@ from pddl.logic.functions import (
 )
 from pddl.logic.predicates import DerivedPredicate, EqualTo, Predicate
 from pddl.logic.sensing_model import SensingModel
+from pddl.logic.state_variable import ObservableVariable, StateVariable
 from pddl.logic.terms import Constant, Variable
 from pddl.parser.base import BaseParser
 from pddl.parser.symbols import BINARY_COMP_SYMBOLS, Symbols
@@ -74,6 +75,8 @@ class DomainTransformer(Transformer[Any, Domain]):
         actions = []
         derived_predicates = []
         sensing_models = []
+        state_variables = []
+        observable_variables = []
         for arg in args[2:-1]:
             if isinstance(arg, Action):
                 actions.append(arg)
@@ -81,10 +84,14 @@ class DomainTransformer(Transformer[Any, Domain]):
                 derived_predicates.append(arg)
             elif isinstance(arg, SensingModel):
                 sensing_models.append(arg)
+            elif isinstance(arg, StateVariable):
+                state_variables.append(arg)
+            elif isinstance(arg, ObservableVariable):
+                observable_variables.append(arg)
             else:
                 assert_(isinstance(arg, dict))
                 kwargs.update(arg)
-        kwargs.update(actions=actions, derived_predicates=derived_predicates, sensing_models=sensing_models)
+        kwargs.update(actions=actions, derived_predicates=derived_predicates, sensing_models=sensing_models, state_variables=state_variables, observable_variables=observable_variables)
         return Domain(**kwargs)
 
     def domain_def(self, args):
@@ -160,6 +167,24 @@ class DomainTransformer(Transformer[Any, Domain]):
             var_name: Variable(var_name, tags) for var_name, tags in args[1]
         }
         return list(self._current_free_variables_by_name.values())
+
+    def state_var_def(self, args):
+        """Process the 'state_var_def' rule."""
+        if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
+            raise PDDLMissingRequirementError(Requirements.PARTIAL_OBSERVABILITY)
+        variable = args[2]
+        exception = args[3]
+        formula = args[4]
+        return StateVariable(variable, exception, formula)
+    
+    def obs_var_def(self, args):
+        """Process the 'obs_var_def' rule."""
+        if not self._has_requirement(Requirements.PARTIAL_OBSERVABILITY):
+            raise PDDLMissingRequirementError(Requirements.PARTIAL_OBSERVABILITY)
+        variable = args[2]
+        exception = args[3]
+        formula = args[4]
+        return ObservableVariable(variable, exception, formula)
 
     def sensing_model_def(self, args):
         """Process the 'sensing_model_def' rule."""

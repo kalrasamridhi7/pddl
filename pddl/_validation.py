@@ -33,6 +33,7 @@ from pddl.logic.functions import (
 )
 from pddl.logic.predicates import DerivedPredicate, EqualTo
 from pddl.logic.sensing_model import SensingModel
+from pddl.logic.state_variable import MultivaluedVariable
 from pddl.logic.terms import Term
 from pddl.parser.symbols import Symbols
 from pddl.requirements import Requirements, _extend_domain_requirements
@@ -315,6 +316,13 @@ class TypeChecker:
         self.check_type(sensing_model.parameters)
         self.check_type(sensing_model.precondition)
         self.check_type(sensing_model.condition)
+    
+    @check_type.register
+    def _(self, state_variable: MultivaluedVariable) -> None:
+        """Check types annotations of a PDDL state variable."""
+        self.check_type(state_variable.variable)
+        self.check_type(state_variable.exception)
+        self.check_type(state_variable.formula)
 
 
 class Functions:

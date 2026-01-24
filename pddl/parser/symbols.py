@@ -47,6 +47,8 @@ class Symbols(Enum):
     PARAMETERS = ":parameters"
     PRECONDITION = ":precondition"
     PREDICATES = ":predicates"
+    STATE_VAR = ":state-variable"
+    OBS_VAR = ":observation-variable"
     SENSING = ":sensing"
     MODEL_FOR = "model-for"
     PROBLEM = "problem"

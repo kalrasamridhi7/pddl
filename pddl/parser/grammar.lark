@@ -22,13 +22,15 @@ atomic_function_skeleton:  LPAR NAME typed_list_variable RPAR
 literal_skeleton: predicate_term
               | LPAR NOT predicate_term RPAR
 
-?structure_def:    action_def | derived_predicates | sensing_model_def
+?structure_def:    action_def | derived_predicates | sensing_model_def | state_var_def | obs_var_def
 action_def:        LPAR ACTION NAME PARAMETERS action_parameters action_body_def RPAR
 action_parameters: LPAR typed_list_variable RPAR
 free_variables:    LPAR typed_list_variable RPAR
 ?action_body_def:  [PRECONDITION emptyor_pregd] [EFFECT emptyor_effect]
 derived_predicates: LPAR DERIVED atomic_formula_skeleton gd RPAR
 sensing_model_def: LPAR SENSING_MODEL PARAMETERS action_parameters MODEL_FOR literal_skeleton [PRECONDITION emptyor_pregd] SUCH_THAT gd RPAR
+state_var_def:     LPAR STATE_VAR atomic_formula_skeleton [gd] gd RPAR
+obs_var_def:       LPAR OBS_VAR atomic_formula_skeleton [gd] gd RPAR
 
 // preconditions
 emptyor_pregd:     LPAR RPAR
@@ -181,6 +183,8 @@ REQUIREMENTS: ":requirements"
 TYPES: ":types"
 CONSTANTS: ":constants"
 PREDICATES: ":predicates"
+STATE_VAR: ":state-variable"
+OBS_VAR:  ":obs-variable"
 SENSING_MODEL: ":sensing-model"
 MODEL_FOR: ":model-for"
 SUCH_THAT: ":such-that"

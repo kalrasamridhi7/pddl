@@ -40,6 +40,7 @@ from pddl.logic.base import And, Formula, is_literal
 from pddl.logic.functions import FunctionExpression, Metric, NumericFunction
 from pddl.logic.predicates import DerivedPredicate, Predicate
 from pddl.logic.sensing_model import SensingModel
+from pddl.logic.state_variable import ObservableVariable, StateVariable
 from pddl.logic.terms import Constant
 from pddl.requirements import Requirements
 
@@ -60,6 +61,8 @@ class Domain:
         functions: Optional[Collection[FunctionExpression]] = None,
         actions: Optional[Collection["Action"]] = None,
         sensing_models: Optional[Collection["SensingModel"]] = None,
+        state_variables: Optional[Collection["StateVariable"]] = None,
+        observable_variables: Optional[Collection["ObservableVariable"]] = None,
     ):
         """
         Initialize a PDDL domain.
@@ -84,6 +87,8 @@ class Domain:
         self._actions = ensure_set(actions)
         self._sensing_models = ensure_set(sensing_models)
         self._functions = Functions(functions, self._requirements)
+        self._state_variables = ensure_set(state_variables)
+        self._observable_variables = ensure_set(observable_variables)
 
         self._check_consistency()
 
@@ -94,6 +99,8 @@ class Domain:
         type_checker.check_type(self._predicates)
         type_checker.check_type(self._actions)
         type_checker.check_type(self._sensing_models)
+        #type_checker.check_type(self._state_variables)
+        #type_checker.check_type(self._observable_variables)
         _check_types_in_has_terms_objects(self._actions, self._types.all_types)  # type: ignore
         self._check_types_in_derived_predicates()
         self._check_literals_in_sensing_models()
@@ -161,7 +168,17 @@ class Domain:
     def actions(self) -> AbstractSet["Action"]:
         """Get the actions."""
         return self._actions
-    
+
+    @property
+    def state_variables(self) -> AbstractSet["StateVariable"]:
+        """Get the state variables."""
+        return self._state_variables
+
+    @property
+    def observable_variables(self) -> AbstractSet["ObservableVariable"]:
+        """Get the observable variables."""
+        return self._observable_variables
+
     @property
     def sensing_models(self) -> AbstractSet["SensingModel"]:
         """Get the sensing models."""
@@ -209,13 +226,25 @@ class Domain:
         )
         body += sort_and_print_collection(
             "",
-            self.actions,
+            self.state_variables,
+            "",
+            to_string=lambda obj: str(obj) + "\n",
+        )
+        body += sort_and_print_collection(
+            "",
+            self.observable_variables,
             "",
             to_string=lambda obj: str(obj) + "\n",
         )
         body += sort_and_print_collection(
             "",
             self.sensing_models,
+            "",
+            to_string=lambda obj: str(obj) + "\n",
+        )
+        body += sort_and_print_collection(
+            "",
+            self.actions,
             "",
             to_string=lambda obj: str(obj) + "\n",
         )
