@@ -16,3 +16,4 @@ from .helpers import constants, variables
 from .predicates import Predicate
 from .terms import Constant, Variable
 from .sensing_model import SensingModel
+from .state_variable import MultivaluedVariable, StateVariable, ObservableVariable
